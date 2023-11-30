@@ -11,7 +11,7 @@
 <body class="font-sans bg-gray-100">
 
  <?php
-    include 'header.php';
+    include './tmp/header.php';
  ?>
 
         <main class="flex flex-wrap justify-around p-4">
