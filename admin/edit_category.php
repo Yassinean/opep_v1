@@ -1,15 +1,5 @@
 <?php
-$host = "localhost";
-$dbname = "test1";  // Adjust this line
-$username = "root";
-$password = "";
-
-$mysqli = new mysqli($host, $username, $password, $dbname);
-
-if ($mysqli->connect_error) {
-    die("Connection failed: " . $mysqli->connect_error);
-}
-
+include '../connect.php';
 if (isset($_POST['editCategory'])) {
     $categoryId = $_POST['adminCategoryId'];
     $nameCtg = $_POST['categoryName'];
@@ -29,7 +19,7 @@ if (isset($_POST['editCategory'])) {
         }
     } else {
         // No new image provided, keep the existing image
-        $result = $mysqli->query("SELECT ctg_img_path FROM categorie WHERE id = $categoryId");
+        $result = mysqli_query($conn,"SELECT ctg_img_path FROM categorie WHERE id = $categoryId");
 
         if ($result->num_rows > 0) {
             $row = $result->fetch_assoc();
@@ -43,7 +33,7 @@ if (isset($_POST['editCategory'])) {
     // Check if a new name is provided
     if (empty($nameCtg)) {
         // No new name provided, keep the existing name
-        $result = $mysqli->query("SELECT ctg_name FROM categorie WHERE id = $categoryId");
+        $result = mysqli_query($conn,"SELECT ctg_name FROM categorie WHERE id = $categoryId");
 
         if ($result->num_rows > 0) {
             $row = $result->fetch_assoc();
@@ -55,7 +45,7 @@ if (isset($_POST['editCategory'])) {
     }
 
     // Update the database
-    $stmt = $mysqli->prepare("UPDATE categorie SET ctg_name = ?, ctg_img_path = ? WHERE id = ?");
+    $stmt = mysqli_prepare($conn,"UPDATE categorie SET ctg_name = ?, ctg_img_path = ? WHERE id = ?");
 
     // Bind parameters and execute the statement
     $stmt->bind_param("ssi", $nameCtg, $imagePath, $categoryId);
