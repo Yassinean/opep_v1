@@ -2,51 +2,32 @@
 include '../connect.php';
 include 'dashboard.php';
 
-if (isset($_POST['editProduct'])) {
+if(isset($_POST['editProduct'])) {
     $productId = $_POST['editProductID'];
     $productName = $_POST['editProductName'];
-    $productDescription = $_POST['editProductDescription'];
     $productPrice = $_POST['editProductPrice'];
     $productCategory = $_POST['editProductCategory'];
 
-    // Check if a new image is provided
-    if ($_FILES["editProductImage"]["size"] > 0) {
-        $uploadDir = "uploads/category_images/";
-        // Create the directory if it doesn't exist
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
 
-        $uploadFile = $uploadDir . basename($_FILES["editProductImage"]["name"]);
-        // echo $uploadFile;
-        // exit;
+    $img_name = $_FILES['editProductImage']['name'];
+    $img_size = $_FILES['editProductImage']['size'];
+    $tmp_name = $_FILES['editProductImage']['tmp_name']; //path
+    $error = $_FILES['editProductImage']['error'];
 
-        if (move_uploaded_file($_FILES["editProductImage"]["tmp_name"], $uploadFile)) {
-            $imagePath = $uploadFile;
-        } else {
-            echo "Error uploading file.";
-            exit();
-        }
-    } else {
-        $result = $conn->query("SELECT `image` FROM plante WHERE id = $productId");
+    $img_ex = pathinfo($img_name, PATHINFO_EXTENSION);
+    $img_ex_lc = strtolower($img_ex);
 
-        if ($result->num_rows > 0) {
-            $row = $result->fetch_assoc();
-            $imagePath = $row['image'];
-        } else {
-            echo "Product not found.";
-            exit();
-        }
-    }
+    $new_img_name = uniqid("IMG-", true).'.'.$img_ex_lc;
+    $img_upload_path = './uploads/product_images/'.$new_img_name;
+    move_uploaded_file($tmp_name, $img_upload_path);
 
-    $stmt = $conn->prepare("UPDATE plante SET plt_name = ?, description = ?, prix = ?, image = ?, categorieID = ? WHERE id = ?");
-    $stmt->bind_param("ssissi", $productName, $productDescription, $productPrice, $imagePath, $productCategory, $productId);
+
+    $stmt = $conn->prepare("UPDATE plante SET nom = ?,  prix = ?, image = ?, idCategorie = ? WHERE idPlante = ?");
+    $stmt->bind_param("sisii", $productName, $productPrice, $new_img_name, $productCategory, $productId);
     $stmt->execute();
-
-    header("Location: dashboard.php");
-    exit();
+    echo "<script> window.location.href = 'dashboard.php' </script>";
 } else {
-    header("Location: dashboard.php");
+    header("Location: dashboard.php?error=failed");
     exit();
 }
 ?>

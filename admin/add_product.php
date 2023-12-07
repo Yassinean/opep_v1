@@ -1,41 +1,40 @@
 <?php
 include '../connect.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["addProduct"])) {
-    // Retrieve category name
-    $productName=$_POST["productName"];
+if(isset($_POST["addProduct"])) {
+    $productName = $_POST["productName"];
     $productCategory = $_POST["productCategory"];
-    $productDescription=$_POST["productDescription"];
-    $productPrice=$_POST["productPrice"];
+    $productPrice = $_POST["productPrice"];
 
-    // Handle image upload
-    $uploadDir = "uploads/category_images/";
-    $uploadFile = $uploadDir . basename($_FILES["productImage"]["name"]);
 
-    if (move_uploaded_file($_FILES["productImage"]["tmp_name"], $uploadFile)) {
+    $img_name = $_FILES['productImage']['name'];
+    $img_size = $_FILES['productImage']['size'];
+    $tmp_name = $_FILES['productImage']['tmp_name']; //path
+    $error = $_FILES['productImage']['error'];
 
-        $imagePath = $uploadFile; // Store the file path in the database
+    $img_ex = pathinfo($img_name, PATHINFO_EXTENSION);
+    $img_ex_lc = strtolower($img_ex);
 
-        // Insert into the database
-        $stmt = $conn->prepare("INSERT INTO plante (plt_name, description, prix, image, categorieID) VALUES (?, ?, ?, ?, ?)");
+    $new_img_name = uniqid("IMG-", true).'.'.$img_ex_lc;
+    $img_upload_path = './uploads/product_images/'.$new_img_name;
+    move_uploaded_file($tmp_name, $img_upload_path);
 
-        // Bind parameters and execute the statement
-        $stmt->bind_param("ssisi", $productName, $productDescription, $productPrice, $imagePath, $productCategory);
- 
-        if ($stmt->execute()) {
-            // Redirect back to the dashboard or wherever you want after insertion
-            header("Location: dashboard.php");
-            exit();
-        } else {
-            echo "Error executing query: " . $stmt->error;
-        }
+    $stmt = $conn->prepare("INSERT INTO plante (nom, prix, image, idCategorie) VALUES (?, ?, ?, ?)");
 
-        $stmt->close();
+    $stmt->bind_param("sisi", $productName, $productPrice, $new_img_name, $productCategory);
+
+    if($stmt->execute()) {
+        header("Location: dashboard.php?added=success");
+        exit();
     } else {
-        echo "Error uploading file.";
+        echo "Error executing query: ".$stmt->error;
     }
+
+    $stmt->close();
+
 } else {
-    // If the form is not submitted, redirect to the dashboard
-    header("Location: dashboard.php");
+    header("Location: dashboard.php?error=upload_error");
     exit();
 }
+
+

@@ -1,42 +1,34 @@
 <?php
 include '../connect.php';
 
-// Check if the form is submitted
 if (isset($_POST['deleteCategory'])) {
-    // Get the category ID from the form
     $categoryId = $_POST['categoryId'];
 
-    // Check for related records in the plante table
-    $checkPlanteQuery = "SELECT id FROM plante WHERE categorieID = ?";
-    $checkPlanteStmt = $conn->prepare($checkPlanteQuery);
+    $req = "SELECT id FROM plante WHERE categorieID = ?";
+    $sql = mysqli_prepare($conn,$req);
 
-    if ($checkPlanteStmt) {
-        $checkPlanteStmt->bind_param('i', $categoryId);
-        $checkPlanteStmt->execute();
-        $checkPlanteStmt->store_result();
+    if ($sql) {
+        $sql->bind_param('i', $categoryId);
+        $sql->execute();
+        $sql->store_result();
 
-        // If there are related records in the plante table
-        if ($checkPlanteStmt->num_rows > 0) {
-            // Handle the deletion or update of related records in plante table
-            // For example, you might delete the related records:
-            $deletePlanteQuery = "DELETE FROM plante WHERE categorieID = ?";
-            $deletePlanteStmt = $conn->prepare($deletePlanteQuery);
+        if ($sql->num_rows > 0) {
+            $req1 = "DELETE FROM plante WHERE categorieID = ?";
+            $sql1 = $conn->prepare($req1);
 
-            if ($deletePlanteStmt) {
-                $deletePlanteStmt->bind_param('i', $categoryId);
-                $deletePlanteStmt->execute();
-                $deletePlanteStmt->close();
+            if ($sql1) {
+                $sql1->bind_param('i', $categoryId);
+                $sql1->execute();
+                $sql1->close();
 
-                // Proceed with deleting the category after handling related records
-                $deleteCategoryQuery = "DELETE FROM categorie WHERE id = ?";
-                $stmt = $conn->prepare($deleteCategoryQuery);
+                $req3 = "DELETE FROM categorie WHERE id = ?";
+                $stmt = $conn->prepare($req3);
 
                 if ($stmt) {
                     $stmt->bind_param('i', $categoryId);
                     $stmt->execute();
                     $stmt->close();
 
-                    // Redirect back to the dashboard after deletion
                     header("Location: dashboard.php");
                     exit();
                 } else {
@@ -46,7 +38,6 @@ if (isset($_POST['deleteCategory'])) {
                 echo "Error preparing delete statement for plante records: " . $conn->error;
             }
         } else {
-            // No related records in the plante table, proceed with deleting the category
             $deleteCategoryQuery = "DELETE FROM categorie WHERE id = ?";
             $stmt = $conn->prepare($deleteCategoryQuery);
 
@@ -63,7 +54,7 @@ if (isset($_POST['deleteCategory'])) {
             }
         }
 
-        $checkPlanteStmt->close();
+        $sql->close();
     } else {
         echo "Error preparing statement to check related records: " . $conn->error;
     }

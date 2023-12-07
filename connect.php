@@ -4,7 +4,7 @@
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "opep";
+$dbname = "opepv2";
 
 $conn = mysqli_connect($servername, $username, $password, $dbname);
 

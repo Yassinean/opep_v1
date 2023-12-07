@@ -4,11 +4,11 @@ if (session_status() == PHP_SESSION_NONE) {
   session_start();
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+if (isset($_POST['login'])) {
   $email = $_POST['email'];
   $password = $_POST['password'];
 
-  $sql = "SELECT * FROM users WHERE email = '$email'";
+  $sql = "SELECT * FROM utilisateur WHERE email = '$email'";
   $query = mysqli_query($conn, $sql);
 
   if (!$query) {
@@ -16,13 +16,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   }
 
   $user = mysqli_fetch_assoc($query);
-  if ($user != '' && password_verify($password, $user['password'])) {
+  if ($user != '' && password_verify($password, $user['passwordUser'])) {
     $_SESSION['email'] = $email;
     $_SESSION['password'] = $password;
-    $_SESSION['userId'] = $user['id'];
+    $_SESSION['idUser'] = $user['idUser'];
 
-    $Role = $user['role_id'];
-    $_SESSION['role_id'] = $Role;
+    $Role = $user['idRole'];
+    $_SESSION['idRole'] = $Role;
 
     if ($Role == 1) {
       header('Location: admin/dashboard.php');
@@ -61,7 +61,7 @@ include './tmp/head.php';
       </div>
 
       <div class="text-center">
-        <button type="submit"
+        <button type="submit" name="login"
           class="py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring focus:border-green-400">Login</button>
       </div>
     </form>
